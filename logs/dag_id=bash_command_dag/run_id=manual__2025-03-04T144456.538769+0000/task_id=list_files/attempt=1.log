@@ -1,0 +1,26 @@
+[2025-03-04T14:44:59.406+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2025-03-04T14:44:59.441+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: bash_command_dag.list_files manual__2025-03-04T14:44:56.538769+00:00 [queued]>
+[2025-03-04T14:44:59.455+0000] {taskinstance.py:2614} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: bash_command_dag.list_files manual__2025-03-04T14:44:56.538769+00:00 [queued]>
+[2025-03-04T14:44:59.456+0000] {taskinstance.py:2867} INFO - Starting attempt 1 of 2
+[2025-03-04T14:44:59.480+0000] {taskinstance.py:2890} INFO - Executing <Task(BashOperator): list_files> on 2025-03-04 14:44:56.538769+00:00
+[2025-03-04T14:44:59.489+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=193) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2025-03-04T14:44:59.491+0000] {standard_task_runner.py:72} INFO - Started process 194 to run task
+[2025-03-04T14:44:59.489+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'bash_command_dag', 'list_files', 'manual__2025-03-04T14:44:56.538769+00:00', '--job-id', '6', '--raw', '--subdir', 'DAGS_FOLDER/test_dag.py', '--cfg-path', '/tmp/tmppy7hns5d']
+[2025-03-04T14:44:59.492+0000] {standard_task_runner.py:105} INFO - Job 6: Subtask list_files
+[2025-03-04T14:44:59.513+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/settings.py:209 DeprecationWarning: The sql_alchemy_conn option in [core] has been moved to the sql_alchemy_conn option in [database] - the old setting has been used, but please update your config.
+[2025-03-04T14:44:59.559+0000] {task_command.py:467} INFO - Running <TaskInstance: bash_command_dag.list_files manual__2025-03-04T14:44:56.538769+00:00 [running]> on host 60afe3d3ebe0
+[2025-03-04T14:44:59.677+0000] {taskinstance.py:3134} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='bash_command_dag' AIRFLOW_CTX_TASK_ID='list_files' AIRFLOW_CTX_EXECUTION_DATE='2025-03-04T14:44:56.538769+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-03-04T14:44:56.538769+00:00'
+[2025-03-04T14:44:59.678+0000] {taskinstance.py:732} INFO - ::endgroup::
+[2025-03-04T14:44:59.708+0000] {subprocess.py:78} INFO - Tmp dir root location: /tmp
+[2025-03-04T14:44:59.709+0000] {subprocess.py:88} INFO - Running command: ['/usr/bin/bash', '-c', 'ls -l /opt/***/dags']
+[2025-03-04T14:44:59.719+0000] {subprocess.py:99} INFO - Output:
+[2025-03-04T14:44:59.735+0000] {subprocess.py:106} INFO - total 4
+[2025-03-04T14:44:59.736+0000] {subprocess.py:106} INFO - -rwxrwxrwx 1 root root    0 Mar  4 14:44 ETL.py
+[2025-03-04T14:44:59.736+0000] {subprocess.py:106} INFO - drwxrwxr-x 1 root root 4096 Mar  4 14:44 __pycache__
+[2025-03-04T14:44:59.737+0000] {subprocess.py:106} INFO - -rwxrwxrwx 1 root root  915 Mar  4 14:40 test_dag.py
+[2025-03-04T14:44:59.737+0000] {subprocess.py:110} INFO - Command exited with return code 0
+[2025-03-04T14:44:59.777+0000] {taskinstance.py:341} INFO - ::group::Post task execution logs
+[2025-03-04T14:44:59.778+0000] {taskinstance.py:353} INFO - Marking task as SUCCESS. dag_id=bash_command_dag, task_id=list_files, run_id=manual__2025-03-04T14:44:56.538769+00:00, execution_date=20250304T144456, start_date=20250304T144459, end_date=20250304T144459
+[2025-03-04T14:44:59.829+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2025-03-04T14:44:59.849+0000] {taskinstance.py:3901} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2025-03-04T14:44:59.853+0000] {local_task_job_runner.py:245} INFO - ::endgroup::

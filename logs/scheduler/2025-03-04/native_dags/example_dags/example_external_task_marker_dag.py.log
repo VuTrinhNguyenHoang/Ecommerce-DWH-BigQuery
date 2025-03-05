@@ -1,0 +1,40 @@
+[2025-03-04T14:30:03.298+0000] {processor.py:186} INFO - Started process (PID=63) to work on /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:30:03.300+0000] {processor.py:914} INFO - Processing file /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py for tasks to queue
+[2025-03-04T14:30:03.304+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.303+0000] {dagbag.py:588} INFO - Filling up the DagBag from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:30:03.320+0000] {processor.py:925} INFO - DAG(s) 'example_external_task_marker_parent', 'example_external_task_marker_child' retrieved from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:30:03.522+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.521+0000] {override.py:1912} INFO - Created Permission View: can delete on DAG:example_external_task_marker_parent
+[2025-03-04T14:30:03.544+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.543+0000] {override.py:1912} INFO - Created Permission View: can read on DAG:example_external_task_marker_parent
+[2025-03-04T14:30:03.556+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.555+0000] {override.py:1912} INFO - Created Permission View: can edit on DAG:example_external_task_marker_parent
+[2025-03-04T14:30:03.570+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.570+0000] {override.py:1912} INFO - Created Permission View: can delete on DAG Run:example_external_task_marker_parent
+[2025-03-04T14:30:03.584+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.584+0000] {override.py:1912} INFO - Created Permission View: menu access on DAG Run:example_external_task_marker_parent
+[2025-03-04T14:30:03.595+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.594+0000] {override.py:1912} INFO - Created Permission View: can read on DAG Run:example_external_task_marker_parent
+[2025-03-04T14:30:03.605+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.605+0000] {override.py:1912} INFO - Created Permission View: can create on DAG Run:example_external_task_marker_parent
+[2025-03-04T14:30:03.628+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.628+0000] {override.py:1912} INFO - Created Permission View: can delete on DAG:example_external_task_marker_child
+[2025-03-04T14:30:03.639+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.638+0000] {override.py:1912} INFO - Created Permission View: can read on DAG:example_external_task_marker_child
+[2025-03-04T14:30:03.651+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.650+0000] {override.py:1912} INFO - Created Permission View: can edit on DAG:example_external_task_marker_child
+[2025-03-04T14:30:03.664+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.663+0000] {override.py:1912} INFO - Created Permission View: can delete on DAG Run:example_external_task_marker_child
+[2025-03-04T14:30:03.675+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.675+0000] {override.py:1912} INFO - Created Permission View: menu access on DAG Run:example_external_task_marker_child
+[2025-03-04T14:30:03.688+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.687+0000] {override.py:1912} INFO - Created Permission View: can read on DAG Run:example_external_task_marker_child
+[2025-03-04T14:30:03.700+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.699+0000] {override.py:1912} INFO - Created Permission View: can create on DAG Run:example_external_task_marker_child
+[2025-03-04T14:30:03.701+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.700+0000] {dag.py:3239} INFO - Sync 2 DAGs
+[2025-03-04T14:30:03.724+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.724+0000] {dag.py:3262} INFO - Creating ORM DAG for example_external_task_marker_parent
+[2025-03-04T14:30:03.725+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.725+0000] {dag.py:3262} INFO - Creating ORM DAG for example_external_task_marker_child
+[2025-03-04T14:30:03.726+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.726+0000] {dag.py:4180} INFO - Setting next_dagrun for example_external_task_marker_child to None, run_after=None
+[2025-03-04T14:30:03.728+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:03.727+0000] {dag.py:4180} INFO - Setting next_dagrun for example_external_task_marker_parent to None, run_after=None
+[2025-03-04T14:30:03.755+0000] {processor.py:208} INFO - Processing /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py took 0.467 seconds
+[2025-03-04T14:30:33.928+0000] {processor.py:186} INFO - Started process (PID=126) to work on /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:30:33.930+0000] {processor.py:914} INFO - Processing file /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py for tasks to queue
+[2025-03-04T14:30:33.933+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:33.933+0000] {dagbag.py:588} INFO - Filling up the DagBag from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:30:33.946+0000] {processor.py:925} INFO - DAG(s) 'example_external_task_marker_child', 'example_external_task_marker_parent' retrieved from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:30:33.989+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:33.989+0000] {dag.py:3239} INFO - Sync 2 DAGs
+[2025-03-04T14:30:34.029+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:34.029+0000] {dag.py:4180} INFO - Setting next_dagrun for example_external_task_marker_child to None, run_after=None
+[2025-03-04T14:30:34.038+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:30:34.038+0000] {dag.py:4180} INFO - Setting next_dagrun for example_external_task_marker_parent to None, run_after=None
+[2025-03-04T14:30:34.085+0000] {processor.py:208} INFO - Processing /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py took 0.165 seconds
+[2025-03-04T14:31:04.540+0000] {processor.py:186} INFO - Started process (PID=189) to work on /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:31:04.541+0000] {processor.py:914} INFO - Processing file /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py for tasks to queue
+[2025-03-04T14:31:04.545+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:31:04.544+0000] {dagbag.py:588} INFO - Filling up the DagBag from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:31:04.555+0000] {processor.py:925} INFO - DAG(s) 'example_external_task_marker_child', 'example_external_task_marker_parent' retrieved from /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py
+[2025-03-04T14:31:04.588+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:31:04.588+0000] {dag.py:3239} INFO - Sync 2 DAGs
+[2025-03-04T14:31:04.608+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:31:04.608+0000] {dag.py:4180} INFO - Setting next_dagrun for example_external_task_marker_child to None, run_after=None
+[2025-03-04T14:31:04.614+0000] {logging_mixin.py:190} INFO - [2025-03-04T14:31:04.614+0000] {dag.py:4180} INFO - Setting next_dagrun for example_external_task_marker_parent to None, run_after=None
+[2025-03-04T14:31:04.637+0000] {processor.py:208} INFO - Processing /home/airflow/.local/lib/python3.12/site-packages/airflow/example_dags/example_external_task_marker_dag.py took 0.105 seconds
