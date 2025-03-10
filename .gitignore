@@ -1,3 +1,4 @@
 dags/
 logs/
+plugins/
 venv/
