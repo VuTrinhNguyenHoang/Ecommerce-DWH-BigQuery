@@ -5,8 +5,6 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
-import os
-
 
 default_args = {
     'owner': 'airflow',
@@ -41,8 +39,6 @@ def crawl_and_save_categories():
     response = requests.get("https://tiki.vn/", headers=headers, params=params)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # print(soup.prettify())
-
     div_container = soup.find('div', class_='styles__StyledListItem-sc-w7gnxl-0 cjqkgR')
     a_tags = div_container.find_all('a')
 
@@ -54,14 +50,8 @@ def crawl_and_save_categories():
             categories_id.append(match.group(1))
 
     df = pd.DataFrame({'category_id': categories_id})
-    
-    output_dir = '/opt/airflow/dags/categories'
-    output_file = os.path.join(output_dir, 'categories_id.csv')
-    
-    os.makedirs(output_dir, exist_ok=True)
-    
-    df.to_csv(output_file, index=False)
-    print(f"Đã lưu {len(categories_id)} category_id vào file: {output_file}")
+    df.to_csv('/opt/airflow/dags/categories/categories_id.csv', index=False)
+    print(f"Đã lưu {len(categories_id)} category_id vào file CSV!")
 
 with DAG(
     dag_id='crawl_categories_dag',

@@ -1,4 +1,3 @@
-version: '3.7'
 x-airflow-common:
   &airflow-common
   # image: apache/airflow:latest
@@ -12,7 +11,7 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
-    AIRFLOW_WEBSERVER_SECRET_KEY: bm67YCMEbZKsQOPU2B61qQ==
+    AIRFLOW_WEBSERVER_SECRET_KEY: yourwebserversecret
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
@@ -23,6 +22,67 @@ x-airflow-common:
       condition: service_healthy
 
 services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+    container_name: namenode
+    environment:
+      - CLUSTER_NAME=test-cluster
+    volumes:
+      - namenode:/hadoop/dfs/name
+      - ./config/namenode/core-site.xml:/etc/hadoop/core-site.xml
+      - ./config/namenode/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+      - ./config/namenode/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    ports:
+      - 9870:9870
+      - 9000:9000
+    networks:
+      - net
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+    container_name: datanode
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - CLUSTER_NAME=test-cluster
+    volumes:
+      - datanode:/hadoop/dfs/data
+    networks:
+      - net
+
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop2.7.4-java8
+    container_name: resourcemanager
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+    volumes:
+      - ./config/resourcemanager/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    ports:
+      - 8088:8088 
+    networks:
+      - net
+
+  nodemanager:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop2.7.4-java8
+    container_name: nodemanager
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+    volumes:
+      - ./config/nodemanager/yarn-site.xml:/etc/hadoop/yarn-site.xml
+    depends_on:
+      - resourcemanager
+    networks:
+      - net
+
+  historyserver:
+    image: bde2020/hadoop-historyserver:2.0.0-hadoop2.7.4-java8
+    container_name: historyserver
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+      - YARN_CONF_yarn_resourcemanager_address=resourcemanager:8050
+    networks:
+      - net
+
   postgres:
     image: postgres:13
     environment:
@@ -37,6 +97,8 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+    networks:
+      - net
 
   airflow-webserver:
     <<: *airflow-common
@@ -49,11 +111,15 @@ services:
       timeout: 10s
       retries: 5
     restart: always
+    networks:
+      - net
 
   airflow-scheduler:
     <<: *airflow-common
     command: bash -c "airflow db upgrade && airflow scheduler"
     restart: always
+    networks:
+      - net
 
   airflow-init:
     <<: *airflow-common
@@ -64,6 +130,13 @@ services:
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+    networks:
+      - net
 
 volumes:
   postgres-db-volume:
+  namenode:
+  datanode:
+
+networks:
+  net:
