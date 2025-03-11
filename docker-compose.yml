@@ -33,8 +33,8 @@ services:
       - ./config/namenode/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
       - ./config/namenode/yarn-site.xml:/etc/hadoop/yarn-site.xml
     ports:
-      - 9870:9870
       - 9000:9000
+      - 9870:9870
     networks:
       - net
 
@@ -130,6 +130,20 @@ services:
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+    networks:
+      - net
+
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    container_name: jupyter-notebook
+    ports:
+      - 8888:8888
+      - 4040:4040
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - GRANT_SUDO=yes
     networks:
       - net
 
