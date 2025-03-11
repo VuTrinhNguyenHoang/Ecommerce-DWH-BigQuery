@@ -293,12 +293,12 @@ def load_to_hdfs(**kwargs):
 
     # Save comments
     if comment_data:
-        remote_comment_path = f"/user/airflow/categories/comment_inmemory_{date_str}.parquet"
+        remote_comment_path = f"/user/airflow/comments/comment_inmemory_{date_str}.parquet"
         save_to_hdfs(comment_data, "comment", remote_comment_path)
 
     # Save products
     if product_data:
-        remote_product_path = f"/user/airflow/categories/product_inmemory_{date_str}.parquet"
+        remote_product_path = f"/user/airflow/details/product_inmemory_{date_str}.parquet"
         save_to_hdfs(product_data, "product", remote_product_path)
 
 load_hdfs_task = PythonOperator(
