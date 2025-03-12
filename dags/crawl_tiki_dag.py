@@ -19,7 +19,7 @@ HEADERS = {
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'vi,en-US;q=0.9,en;q=0.8',
     'x-guest-token': 'acuqSeZsnKCWVgofFGjxJi7Ot4N8dPpX',
-    'Connection': 'keep-alive',
+    'Connection': 'keep-alive'
 }
 
 def crawl_and_save_categories():
