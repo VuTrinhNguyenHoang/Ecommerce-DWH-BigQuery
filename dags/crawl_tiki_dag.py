@@ -107,15 +107,15 @@ def crawl_and_save_productId(**context):
 
     return products_id
 
-def comment_parser(json):
+def comment_parser(json_data):
     dic = dict()
-    dic['id'] = json.get('id', None)
-    dic['product_id'] = json.get('product_id', None) 
-    dic['title'] = json.get('title', None)
-    dic['content'] = json.get('content', None)
-    dic['rating'] = json.get('rating', None)
-    dic['created_at'] = json.get('created_at', None)
-    dic['purchased_at'] = json.get('created_by', {}).get('purchased_at', None)
+    dic['id'] = json_data.get('id', None)
+    dic['product_id'] = json_data.get('product_id', None) 
+    dic['title'] = json_data.get('title', None)
+    dic['content'] = json_data.get('content', None)
+    dic['rating'] = json_data.get('rating', None)
+    dic['created_at'] = json_data.get('created_at', None)
+    dic['purchased_at'] = json_data.get('created_by', {}).get('purchased_at', None)
     return dic
 
 def crawl_and_save_comment(**context):
@@ -134,7 +134,7 @@ def crawl_and_save_comment(**context):
         }
 
         comments = []
-        for product_id in products_id:
+        for product_id in products_id[:5]:
             params['product_id'] = product_id
             
             try:
@@ -178,19 +178,19 @@ def crawl_and_save_comment(**context):
         logging.error("Lỗi trong hàm crawl_and_save_comment: %s", e, exc_info=True)
         raise
 
-def parser_product(json):
+def parser_product(json_data):
     dic = dict()
-    dic['id'] = json.get('id', None)
-    dic['name'] = json.get('name', None)
-    dic['short_description'] = json.get('short_description', None)
-    dic['price'] = json.get('price', None)
-    dic['list_price'] = json.get('list_price', None)
-    dic['discount'] = json.get('discount', None)
-    dic['discount_rate'] = json.get('discount_rate', None)
-    dic['all_time_quantity_sold'] = json.get('all_time_quantity_sold', None)
-    dic['inventory_status'] = json.get('inventory_status', None)
-    dic['stock_item_qty'] = json.get('stock_item', {}).get('qty', None)
-    dic['stock_item_max_sale_qty'] = json.get('stock_item', {}).get('max_sale_qty', None)
+    dic['id'] = json_data.get('id', None)
+    dic['name'] = json_data.get('name', None)
+    dic['short_description'] = json_data.get('short_description', None)
+    dic['price'] = json_data.get('price', None)
+    dic['list_price'] = json_data.get('list_price', None)
+    dic['discount'] = json_data.get('discount', None)
+    dic['discount_rate'] = json_data.get('discount_rate', None)
+    dic['all_time_quantity_sold'] = json_data.get('all_time_quantity_sold', None)
+    dic['inventory_status'] = json_data.get('inventory_status', None)
+    dic['stock_item_qty'] = json_data.get('stock_item', {}).get('qty', None)
+    dic['stock_item_max_sale_qty'] = json_data.get('stock_item', {}).get('max_sale_qty', None)
     return dic
 
 def crawl_and_save_product_detail(**context):
@@ -202,7 +202,7 @@ def crawl_and_save_product_detail(**context):
 
     try:
         product_details = []
-        for product_id in products_id:
+        for product_id in products_id[:5]:
             try:
                 response = requests.get(f'https://tiki.vn/api/v2/products/{product_id}', headers=HEADERS)
                 
@@ -240,6 +240,37 @@ def crawl_and_save_product_detail(**context):
         logging.error("Lỗi trong hàm crawl_and_save_product_detail: %s", e, exc_info=True)
         raise
 
+def load_data_to_hdfs(**context):
+    try:
+        comments_csv = '/opt/airflow/dags/comments/comments.csv'
+        product_csv = '/opt/airflow/dags/products/product_details.csv'
+        comments_parquet = '/tmp/comments.parquet'
+        product_parquet = '/tmp/product_details.parquet'
+        
+        df_comments = pd.read_csv(comments_csv)
+        df_products = pd.read_csv(product_csv)
+        
+        df_comments.to_parquet(comments_parquet, index=False)
+        df_products.to_parquet(product_parquet, index=False)
+        
+        from hdfs import InsecureClient
+        hdfs_url = 'http://namenode:9870'
+        client = InsecureClient(hdfs_url, user='hdfs')
+
+        hdfs_comments_path = '/user/airflow/comments.parquet'
+        hdfs_products_path = '/user/airflow/product_details.parquet'
+        
+        client.upload(hdfs_comments_path, comments_parquet, overwrite=True)
+        client.upload(hdfs_products_path, product_parquet, overwrite=True)
+        
+        logging.info("Đã tải file Parquet lên HDFS thành công: %s và %s", hdfs_comments_path, hdfs_products_path)
+        
+        os.remove(comments_parquet)
+        os.remove(product_parquet)
+    except Exception as e:
+        logging.error("Lỗi khi lưu file Parquet lên HDFS: %s", e, exc_info=True)
+        raise
+
 with DAG(
     dag_id='crawl_tiki_dag',
     default_args=default_args,
@@ -271,4 +302,10 @@ with DAG(
         provide_context=True
     )
 
-    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail]
+    load_to_hdfs = PythonOperator(
+        task_id='load_data_to_hdfs',
+        python_callable=load_data_to_hdfs,
+        provide_context=True
+    )
+
+    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs

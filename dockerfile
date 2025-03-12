@@ -1,5 +1,9 @@
 FROM apache/airflow:latest
 
+USER root
+RUN apt-get update && apt-get install -y cmake build-essential
+USER airflow
+
 WORKDIR /opt/airflow/
 
 COPY requirements.txt /opt/airflow/requirements.txt

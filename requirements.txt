@@ -1,4 +1,4 @@
 requests
 pandas
-tqdm
-beautifulsoup4
+hdfs
+pyarrow
