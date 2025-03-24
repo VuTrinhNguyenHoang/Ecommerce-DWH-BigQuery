@@ -134,7 +134,7 @@ def crawl_and_save_comment(**context):
         }
 
         comments = []
-        for product_id in products_id[:5]:
+        for product_id in products_id[:1]:
             params['product_id'] = product_id
             
             try:
@@ -202,7 +202,7 @@ def crawl_and_save_product_detail(**context):
 
     try:
         product_details = []
-        for product_id in products_id[:5]:
+        for product_id in products_id[:1]:
             try:
                 response = requests.get(f'https://tiki.vn/api/v2/products/{product_id}', headers=HEADERS)
                 
@@ -257,8 +257,11 @@ def load_data_to_hdfs(**context):
         hdfs_url = 'http://namenode:9870'
         client = InsecureClient(hdfs_url, user='hdfs')
 
-        hdfs_comments_path = '/user/airflow/comments.parquet'
-        hdfs_products_path = '/user/airflow/product_details.parquet'
+        execution_date = context.get('execution_date', datetime.now())
+        date_str = execution_date.strftime("%Y%m%d_%H%M%S")
+
+        hdfs_comments_path = f"/user/airflow/comments/comment_inmemory_{date_str}.parquet"
+        hdfs_products_path = f"/user/airflow/details/product_inmemory_{date_str}.parquet"
         
         client.upload(hdfs_comments_path, comments_parquet, overwrite=True)
         client.upload(hdfs_products_path, product_parquet, overwrite=True)

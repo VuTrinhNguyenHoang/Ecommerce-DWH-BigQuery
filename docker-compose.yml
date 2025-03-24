@@ -42,7 +42,14 @@ services:
     container_name: hdfs-init
     depends_on:
       - namenode
-    command: sh -c "sleep 30 && hdfs dfs -mkdir -p /user/airflow && hdfs dfs -chmod -R 777 /user/airflow"
+    entrypoint: /bin/sh
+    command: >
+      -c "until hdfs dfsadmin -report; do echo 'Waiting for Namenode...'; sleep 5; done && hdfs dfs -mkdir -p /user/airflow/comments && hdfs dfs -mkdir -p /user/airflow/details && hdfs dfs -chmod -R 777 /user/airflow/comments && hdfs dfs -chmod -R 777 /user/airflow/details"
+    volumes:
+      - ./config/namenode/core-site.xml:/etc/hadoop/core-site.xml
+      - ./config/namenode/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
     networks:
       - net
     restart: "no"
@@ -142,6 +149,20 @@ services:
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+    networks:
+      - net
+
+  jupyter:
+    image: jupyter/pyspark-notebook:latest
+    container_name: jupyter-notebook
+    ports:
+      - 8888:8888
+      - 4040:4040
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - GRANT_SUDO=yes
     networks:
       - net
 
