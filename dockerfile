@@ -1,11 +1,12 @@
-FROM apache/airflow:latest
+FROM apache/airflow:latest-python3.10
 
 USER root
-RUN apt-get update && apt-get install -y git build-essential libkrb5-dev && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y bash openjdk-17-jre-headless
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH="${JAVA_HOME}/bin:$PATH"
+
 USER airflow
 
-WORKDIR /opt/airflow/
-
 COPY requirements.txt /opt/airflow/requirements.txt
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r /opt/airflow/requirements.txt

@@ -1,13 +1,4 @@
 requests
 pandas
-numpy
-tqdm
-beautifulsoup4
-apache-airflow
-apache-airflow-providers-apache-hdfs
 hdfs
-python-dotenv
-# pywebhdfs
-# requests-kerberos
-# apache-airflow-providers-apache-spark
-# pyspark
+pyarrow

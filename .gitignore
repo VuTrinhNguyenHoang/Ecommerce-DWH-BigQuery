@@ -1,3 +1,5 @@
-plugins/
+dags/__pycache__
 logs/
-dags/crawl_tiki.ipynb
+plugins/
+notebooks/
+__pycache__/
