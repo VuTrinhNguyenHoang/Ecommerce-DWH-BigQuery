@@ -104,7 +104,7 @@ services:
     <<: *airflow-common
     command: bash -c "airflow db upgrade && airflow webserver"
     ports:
-      - 8080:8080
+      - 8090:8080
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 10s
@@ -144,6 +144,21 @@ services:
     environment:
       - JUPYTER_ENABLE_LAB=yes
       - GRANT_SUDO=yes
+    networks:
+      - net
+  spark-master:
+    image: bitnami/spark:latest
+    container_name: spark-master
+    ports:
+      - "7077:7077"
+      - "9090:8080"
+    networks:
+      - net
+  spark-worker-1:
+    image: bitnami/spark:latest
+    container_name: spark-worker-1
+    ports:
+     - "8081:8081"
     networks:
       - net
 

@@ -1,3 +1,4 @@
 plugins/
 logs/
 dags/crawl_tiki.ipynb
+venv/
