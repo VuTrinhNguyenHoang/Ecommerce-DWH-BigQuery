@@ -30,7 +30,6 @@ def create_spark_session():
 
 def read_data(spark, input_path):
     try:
-        # Define schema for the input data
         parquet_schema = StructType([
             StructField("id", LongType(), True),
             StructField("product_id", LongType(), True),
@@ -136,7 +135,6 @@ def analyze_data(df):
         raise
 
 def write_output(df, output_path):
-    """Write cleaned data to storage"""
     try:
         (df.write
            .mode("overwrite")
