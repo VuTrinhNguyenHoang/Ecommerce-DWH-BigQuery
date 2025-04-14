@@ -1,104 +1,33 @@
+version: '3'
 x-airflow-common:
   &airflow-common
   build: .
+  image: ${AIRFLOW_IMAGE_NAME:-airspark:2.0}
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
-    AIRFLOW_WEBSERVER_SECRET_KEY: yourwebserversecret
+    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 10
+    environment:
+
+ 
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-  user: "${AIRFLOW_UID:-50000}:0"
+    - ./spark/app:/opt/airflow/spark/app
+    - ./spark/resources:/opt/airflow/spark/resources
+  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:
     postgres:
       condition: service_healthy
+  networks:
+    - spark-net
 
 services:
-  namenode:
-    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
-    container_name: namenode
-    environment:
-      - CLUSTER_NAME=test-cluster
-    volumes:
-      - namenode:/hadoop/dfs/name
-      - ./config/namenode/core-site.xml:/etc/hadoop/core-site.xml
-      - ./config/namenode/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
-      - ./config/namenode/yarn-site.xml:/etc/hadoop/yarn-site.xml
-    ports:
-      - 9870:9870
-      - 9000:9000
-    networks:
-      - net
-
-  hdfs-init:
-    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
-    container_name: hdfs-init
-    depends_on:
-      - namenode
-    entrypoint: /bin/sh
-    command: >
-      -c "until hdfs dfsadmin -report; do echo 'Waiting for Namenode...'; sleep 5; done && hdfs dfs -mkdir -p /user/airflow/comments && hdfs dfs -mkdir -p /user/airflow/details && hdfs dfs -chmod -R 777 /user/airflow/comments && hdfs dfs -chmod -R 777 /user/airflow/details"
-    volumes:
-      - ./config/namenode/core-site.xml:/etc/hadoop/core-site.xml
-      - ./config/namenode/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
-    environment:
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
-    networks:
-      - net
-    restart: "no"
-
-  datanode:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
-    container_name: datanode
-    environment:
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
-      - CLUSTER_NAME=test-cluster
-    volumes:
-      - datanode:/hadoop/dfs/data
-    networks:
-      - net
-
-  resourcemanager:
-    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop2.7.4-java8
-    container_name: resourcemanager
-    environment:
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
-    volumes:
-      - ./config/resourcemanager/yarn-site.xml:/etc/hadoop/yarn-site.xml
-    ports:
-      - 8088:8088 
-    networks:
-      - net
-
-  nodemanager:
-    image: bde2020/hadoop-nodemanager:2.0.0-hadoop2.7.4-java8
-    container_name: nodemanager
-    environment:
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
-    volumes:
-      - ./config/nodemanager/yarn-site.xml:/etc/hadoop/yarn-site.xml
-    depends_on:
-      - resourcemanager
-    networks:
-      - net
-
-  historyserver:
-    image: bde2020/hadoop-historyserver:2.0.0-hadoop2.7.4-java8
-    container_name: historyserver
-    environment:
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
-      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
-      - YARN_CONF_yarn_resourcemanager_address=resourcemanager:8050
-    networks:
-      - net
-
   postgres:
     image: postgres:13
     environment:
@@ -107,41 +36,39 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - spark-net
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
-      interval: 10s
+      interval: 5s
       retries: 5
-      start_period: 5s
     restart: always
-    networks:
-      - net
 
   airflow-webserver:
     <<: *airflow-common
-    container_name: airflow-webserver
-    command: bash -c "airflow db upgrade && airflow webserver"
+    command: webserver
     ports:
       - 8080:8080
+    networks:
+      - spark-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 10s
       timeout: 10s
       retries: 5
     restart: always
-    networks:
-      - net
 
   airflow-scheduler:
     <<: *airflow-common
-    container_name: airflow-scheduler
-    command: bash -c "airflow db upgrade && airflow scheduler"
-    restart: always
+    command: scheduler
     networks:
-      - net
+      - spark-net
+    restart: always
 
   airflow-init:
     <<: *airflow-common
-    container_name: airflow-init
     command: version
     environment:
       <<: *airflow-common-env
@@ -149,28 +76,47 @@ services:
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
-    networks:
-      - net
 
-  jupyter:
-    image: jupyter/pyspark-notebook:latest
-    container_name: jupyter-notebook
-    ports:
-      - 8888:8888
-      - 4040:4040
-    volumes:
-      - ./notebooks:/home/jovyan/work
-    environment:
-      - JUPYTER_ENABLE_LAB=yes
-      - GRANT_SUDO=yes
+  spark-service:
+    image: bitnami/spark:3
+    container_name: spark_master
+    hostname: spark-service
     networks:
-      - net
+      - spark-net
+    ports:
+      - "7077:7077"
+      - "4040:4040"
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    volumes:
+      - ./spark/app:/opt/airflow/spark/app
+      - ./spark/resources:/opt/airflow/spark/resources
+      - ./spark/resources/postgres_jars:/opt/bitnami/spark/jars/postgres_jars
+
+  spark-worker:
+    image: bitnami/spark:3
+    container_name: spark_worker
+    hostname: spark-worker
+    networks:
+      - spark-net
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-service:7077
+      - SPARK_WORKER_MEMORY=1g
+      - SPARK_WORKER_CORES=1
+    volumes:
+      - ./spark/app:/opt/airflow/spark/app
+      - ./spark/resources:/opt/airflow/spark/resources
+      - ./spark/resources/postgres_jars:/opt/bitnami/spark/jars/postgres_jars
 
 volumes:
   postgres-db-volume:
-  namenode:
-  datanode:
 
 networks:
-  net:
-    driver: bridge
+  spark-net:
+
+
