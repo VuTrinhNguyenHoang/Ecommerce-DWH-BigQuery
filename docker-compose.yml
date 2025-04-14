@@ -1,5 +1,6 @@
 x-airflow-common:
   &airflow-common
+  # image: apache/airflow:latest
   build: .
   environment:
     &airflow-common-env
@@ -15,6 +16,7 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
+    - ./scripts:/opt/airflow/scripts
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     postgres:
@@ -32,8 +34,19 @@ services:
       - ./config/namenode/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
       - ./config/namenode/yarn-site.xml:/etc/hadoop/yarn-site.xml
     ports:
-      - 9870:9870
       - 9000:9000
+      - 9870:9870
+    networks:
+      - net
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+    container_name: datanode
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - CLUSTER_NAME=test-cluster
+    volumes:
+      - datanode:/hadoop/dfs/data
     networks:
       - net
 
@@ -54,16 +67,6 @@ services:
       - net
     restart: "no"
 
-  datanode:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
-    container_name: datanode
-    environment:
-      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
-      - CLUSTER_NAME=test-cluster
-    volumes:
-      - datanode:/hadoop/dfs/data
-    networks:
-      - net
 
   resourcemanager:
     image: bde2020/hadoop-resourcemanager:2.0.0-hadoop2.7.4-java8
@@ -118,7 +121,6 @@ services:
 
   airflow-webserver:
     <<: *airflow-common
-    container_name: airflow-webserver
     command: bash -c "airflow db upgrade && airflow webserver"
     ports:
       - 8080:8080
@@ -133,7 +135,6 @@ services:
 
   airflow-scheduler:
     <<: *airflow-common
-    container_name: airflow-scheduler
     command: bash -c "airflow db upgrade && airflow scheduler"
     restart: always
     networks:
@@ -141,7 +142,6 @@ services:
 
   airflow-init:
     <<: *airflow-common
-    container_name: airflow-init
     command: version
     environment:
       <<: *airflow-common-env
@@ -166,6 +166,31 @@ services:
     networks:
       - net
 
+  spark-master:
+    image: bitnami/spark:latest
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+    ports:
+      - "7077:7077"
+      - "9090:8080"
+    networks:
+      - net
+
+  spark-worker-1:
+    image: bitnami/spark:latest
+    container_name: spark-worker-1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    networks:
+      - net
+
 volumes:
   postgres-db-volume:
   namenode:
@@ -173,4 +198,3 @@ volumes:
 
 networks:
   net:
-    driver: bridge

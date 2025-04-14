@@ -1,4 +1,6 @@
 dags/__pycache__
 logs/
 plugins/
+notebooks/
+__pycache__/
 venv/
