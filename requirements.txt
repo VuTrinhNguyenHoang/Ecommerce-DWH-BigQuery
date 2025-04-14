@@ -9,5 +9,6 @@ hdfs
 python-dotenv
 # pywebhdfs
 # requests-kerberos
-# apache-airflow-providers-apache-spark
+apache-airflow-providers-apache-spark
 # pyspark
+pyarrow

@@ -1,6 +1,5 @@
 x-airflow-common:
   &airflow-common
-  # image: apache/airflow:latest
   build: .
   environment:
     &airflow-common-env
@@ -37,6 +36,23 @@ services:
       - 9870:9870
     networks:
       - net
+
+  hdfs-init:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+    container_name: hdfs-init
+    depends_on:
+      - namenode
+    entrypoint: /bin/sh
+    command: >
+      -c "until hdfs dfsadmin -report; do echo 'Waiting for Namenode...'; sleep 5; done && hdfs dfs -mkdir -p /user/airflow/comments && hdfs dfs -mkdir -p /user/airflow/details && hdfs dfs -chmod -R 777 /user/airflow/comments && hdfs dfs -chmod -R 777 /user/airflow/details"
+    volumes:
+      - ./config/namenode/core-site.xml:/etc/hadoop/core-site.xml
+      - ./config/namenode/hdfs-site.xml:/etc/hadoop/hdfs-site.xml
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+    networks:
+      - net
+    restart: "no"
 
   datanode:
     image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
@@ -102,6 +118,7 @@ services:
 
   airflow-webserver:
     <<: *airflow-common
+    container_name: airflow-webserver
     command: bash -c "airflow db upgrade && airflow webserver"
     ports:
       - 8090:8080
@@ -116,6 +133,7 @@ services:
 
   airflow-scheduler:
     <<: *airflow-common
+    container_name: airflow-scheduler
     command: bash -c "airflow db upgrade && airflow scheduler"
     restart: always
     networks:
@@ -123,6 +141,7 @@ services:
 
   airflow-init:
     <<: *airflow-common
+    container_name: airflow-init
     command: version
     environment:
       <<: *airflow-common-env
