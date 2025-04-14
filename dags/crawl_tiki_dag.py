@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from datetime import datetime, timedelta
 import requests
 import pandas as pd
@@ -270,6 +271,8 @@ def load_data_to_hdfs(**context):
         
         os.remove(comments_parquet)
         os.remove(product_parquet)
+
+        return hdfs_products_path
     except Exception as e:
         logging.error("Lỗi khi lưu file Parquet lên HDFS: %s", e, exc_info=True)
         raise
@@ -311,4 +314,13 @@ with DAG(
         provide_context=True
     )
 
-    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs
+    clean_data = SparkSubmitOperator(
+        task_id='spark_clean_data',
+        application='/opt/airflow/scripts/clean_data.py',
+        conn_id='spark_default',
+        verbose=True,
+        application_args=['--path', "{{ ti.xcom_pull(task_ids='load_data_to_hdfs') }}"],
+        dag=dag
+    )
+
+    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> clean_data

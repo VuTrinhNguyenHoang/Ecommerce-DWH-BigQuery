@@ -2,3 +2,4 @@ requests
 pandas
 hdfs
 pyarrow
+apache-airflow-providers-apache-spark

@@ -2,3 +2,4 @@ dags/__pycache__
 logs/
 plugins/
 venv/
+notebooks/
