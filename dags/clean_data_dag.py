@@ -23,12 +23,20 @@ with DAG(
     start_date=days_ago(1),
     catchup=False
 ) as dag:
-    clean_data_task = SparkSubmitOperator(
-        task_id='spark_clean_data',
-        application='/opt/airflow/scripts/clean_data_spark.py',  
+    clean_product_details_task = SparkSubmitOperator(
+        task_id='spark_clean_product_details',
+        application='/opt/airflow/scripts/clean_product_details_spark.py',  
         conn_id='spark_default', 
         verbose=True,
         dag=dag
     )
 
-    clean_data_task
+    clean_product_comments_task = SparkSubmitOperator(
+        task_id='spark_clean_product_comments',
+        application='/opt/airflow/scripts/clean_product_comments_spark.py',  
+        conn_id='spark_default', 
+        verbose=True,
+        dag=dag
+    )
+
+    [clean_product_details_task, clean_product_comments_task]
