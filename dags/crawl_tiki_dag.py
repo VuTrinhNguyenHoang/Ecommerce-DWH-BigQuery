@@ -7,6 +7,7 @@ import pandas as pd
 import os
 import time, random
 import logging
+print("JAVA_HOME =", os.environ.get("JAVA_HOME"))
 
 default_args = {
     'owner': 'airflow',
@@ -117,6 +118,7 @@ def comment_parser(json_data):
     dic['rating'] = json_data.get('rating', None)
     dic['created_at'] = json_data.get('created_at', None)
     dic['purchased_at'] = json_data.get('created_by', {}).get('purchased_at', None)
+    dic['date'] = datetime.today().strftime('%Y-%m-%d')
     return dic
 
 def crawl_and_save_comment(**context):
@@ -135,7 +137,7 @@ def crawl_and_save_comment(**context):
         }
 
         comments = []
-        for product_id in products_id[:1]:
+        for product_id in products_id[:100]:
             params['product_id'] = product_id
             
             try:
@@ -192,6 +194,7 @@ def parser_product(json_data):
     dic['inventory_status'] = json_data.get('inventory_status', None)
     dic['stock_item_qty'] = json_data.get('stock_item', {}).get('qty', None)
     dic['stock_item_max_sale_qty'] = json_data.get('stock_item', {}).get('max_sale_qty', None)
+    dic['date'] = datetime.today().strftime('%Y-%m-%d')
     return dic
 
 def crawl_and_save_product_detail(**context):
@@ -203,7 +206,7 @@ def crawl_and_save_product_detail(**context):
 
     try:
         product_details = []
-        for product_id in products_id[:1]:
+        for product_id in products_id[:100]:
             try:
                 response = requests.get(f'https://tiki.vn/api/v2/products/{product_id}', headers=HEADERS)
                 
@@ -268,6 +271,9 @@ def load_data_to_hdfs(**context):
         client.upload(hdfs_products_path, product_parquet, overwrite=True)
         
         logging.info("Đã tải file Parquet lên HDFS thành công: %s và %s", hdfs_comments_path, hdfs_products_path)
+
+        context['ti'].xcom_push(key='comments_path', value=hdfs_comments_path)
+        context['ti'].xcom_push(key='products_path', value=hdfs_products_path)
         
         os.remove(comments_parquet)
         os.remove(product_parquet)
@@ -314,13 +320,22 @@ with DAG(
         provide_context=True
     )
 
-    clean_data = SparkSubmitOperator(
-        task_id='spark_clean_data',
-        application='/opt/airflow/scripts/clean_data.py',
-        conn_id='spark_default',
+    clean_product_details_task = SparkSubmitOperator(
+        task_id='spark_clean_product_details',
+        application='/opt/airflow/scripts/clean_product_details_spark.py',  
+        conn_id='spark_default', 
         verbose=True,
-        application_args=['--path', "{{ ti.xcom_pull(task_ids='load_data_to_hdfs') }}"],
+        application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='products_path') }}"],
         dag=dag
     )
 
-    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> clean_data
+    clean_product_comments_task = SparkSubmitOperator(
+        task_id='spark_clean_product_comments',
+        application='/opt/airflow/scripts/clean_product_comments_spark.py',  
+        conn_id='spark_default', 
+        application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='comments_path') }}"],
+        verbose=True,
+        dag=dag
+    )
+
+    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> [clean_product_details_task, clean_product_comments_task]
