@@ -5,3 +5,6 @@ notebooks/
 __pycache__/
 keys/
 jars/
+crawl_tiki.ipynb/
+dags/comments
+dags/details
