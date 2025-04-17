@@ -3,3 +3,5 @@ logs/
 plugins/
 notebooks/
 __pycache__/
+keys/
+jars/
