@@ -138,7 +138,7 @@ def crawl_and_save_comment(**context):
         }
 
         comments = []
-        for product_id in products_id[:100]:
+        for product_id in products_id[:30]:
             params['product_id'] = product_id
             
             try:
@@ -325,6 +325,11 @@ with DAG(
         conn_id='spark_default', 
         verbose=True,
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='products_path') }}"],
+        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',  # Đường dẫn tới connector
+        conf={
+            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': '/opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json',
+            'spark.hadoop.fs.gs.project.id': 'quantum-theme-441200-q1',
+        },
         dag=dag
     )
 
@@ -334,6 +339,11 @@ with DAG(
         conn_id='spark_default', 
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='comments_path') }}"],
         verbose=True,
+        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',  # Đường dẫn tới connector
+        conf={
+            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': '/opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json',
+            'spark.hadoop.fs.gs.project.id': 'quantum-theme-441200-q1',
+        },
         dag=dag
     )
 
