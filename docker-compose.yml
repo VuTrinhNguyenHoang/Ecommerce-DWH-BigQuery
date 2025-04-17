@@ -12,11 +12,14 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW_WEBSERVER_SECRET_KEY: yourwebserversecret
+    GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./scripts:/opt/airflow/scripts
+    - ./keys:/opt/airflow/keys
+    - ./jars:/opt/airflow/jars
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     postgres:
@@ -169,7 +172,11 @@ services:
   spark-master:
     image: bitnami/spark:latest
     container_name: spark-master
+    volumes:
+      - ./jars:/opt/airflow/jars
+      - ./keys:/opt/airflow/keys
     environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
     ports:
@@ -181,7 +188,11 @@ services:
   spark-worker-1:
     image: bitnami/spark:latest
     container_name: spark-worker-1
+    volumes:
+      - ./jars:/opt/airflow/jars
+      - ./keys:/opt/airflow/keys
     environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
     depends_on:
