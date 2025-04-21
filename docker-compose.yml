@@ -176,8 +176,19 @@ services:
   spark-worker-1:
     image: bitnami/spark:latest
     container_name: spark-worker-1
+    volumes:
+      - /nodal-linker-457513-a0-1e1cceb9e355.json:/opt/keys/key.json
     ports:
      - "8081:8081"
+    command: >
+      bash -c "
+        pip install --no-cache-dir pyspark &&
+        spark-submit
+          --packages com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.36.1
+          --conf spark.hadoop.google.cloud.auth.service.account.enable=true
+          --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/opt/keys/key.json
+          /app/app.py
+      "
     networks:
       - net
 
