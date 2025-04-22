@@ -1,6 +1,10 @@
 dags/__pycache__
+dags/categories
+dags/comments
+dags/products
 logs/
 plugins/
-notebooks/
-__pycache__/
 venv/
+notebooks/
+keys/
+jars/
