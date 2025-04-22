@@ -9,6 +9,10 @@ import time, random
 import logging
 print("JAVA_HOME =", os.environ.get("JAVA_HOME"))
 
+SPARK_BIGQUERY_JARS  = os.getenv("SPARK_BIGQUERY_JARS")
+GCP_PROJECT_ID       = os.getenv("GCP_PROJECT_ID")
+ADC_PATH             = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
 default_args = {
     'owner': 'airflow',
     'start_date': datetime(2025, 3, 1),
@@ -326,7 +330,12 @@ with DAG(
         conn_id='spark_default', 
         verbose=True,
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='products_path') }}"],
-        dag=dag
+        dag=dag,
+        jars=SPARK_BIGQUERY_JARS,
+        conf={
+            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': ADC_PATH,
+            'spark.hadoop.fs.gs.project.id': GCP_PROJECT_ID,
+        }
     )
 
     clean_product_comments_task = SparkSubmitOperator(
@@ -335,7 +344,12 @@ with DAG(
         conn_id='spark_default', 
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='comments_path') }}"],
         verbose=True,
-        dag=dag
+        dag=dag,
+        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',
+        conf={
+            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': ADC_PATH,
+            'spark.hadoop.fs.gs.project.id': GCP_PROJECT_ID,
+        }
     )
 
     crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> [clean_product_details_task, clean_product_comments_task]

@@ -2,6 +2,8 @@ x-airflow-common:
   &airflow-common
   # image: apache/airflow:latest
   build: .
+  env_file:
+    - ./.env
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -17,6 +19,8 @@ x-airflow-common:
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./scripts:/opt/airflow/scripts
+    - ./keys:/opt/airflow/keys
+    - ./jars:/opt/airflow/jars
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     postgres:
@@ -169,6 +173,11 @@ services:
   spark-master:
     image: bitnami/spark:latest
     container_name: spark-master
+    env_file:
+      - ./.env
+    volumes:
+      - ./jars:/opt/airflow/jars
+      - ./keys:/opt/airflow/keys
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -181,7 +190,13 @@ services:
   spark-worker-1:
     image: bitnami/spark:latest
     container_name: spark-worker-1
+    env_file:
+      - ./.env
+    volumes:
+      - ./jars:/opt/airflow/jars
+      - ./keys:/opt/airflow/keys
     environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/keys/sa.json
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
     depends_on:

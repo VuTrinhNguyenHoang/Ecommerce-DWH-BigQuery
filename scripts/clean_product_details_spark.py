@@ -23,6 +23,8 @@ def create_spark_session(app_name="DataCleaning"):
         .config("spark.sql.shuffle.partitions", "200") \
         .config("spark.sql.adaptive.enabled", "true") \
         .config("spark.hadoop.fs.defaultFS", "hdfs://namenode:9000") \
+        .config("spark.hadoop.fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem") \
+        .config("spark.hadoop.google.cloud.auth.service.account.enable", "true") \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
@@ -181,6 +183,14 @@ def main():
         
         # 5. Show cleaned data
         print(df_clean.show(truncate=True))
+
+        df_clean.write \
+                .format("bigquery") \
+                .option("table", "tiki_data.products") \
+                .option("temporaryGcsBucket", "tiki-data-temp") \
+                .option("writeDisposition", "WRITE_APPEND") \
+                .mode("append") \
+                .save()
         
     except Exception as e:
         logger.error(f"Job failed: {str(e)}", exc_info=True)
