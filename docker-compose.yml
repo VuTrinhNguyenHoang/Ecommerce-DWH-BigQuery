@@ -22,6 +22,7 @@ x-airflow-common:
     - ./scripts:/opt/airflow/scripts
     - ./keys:/opt/airflow/keys
     - ./jars:/opt/airflow/jars
+    - ./dbt-bigquery-project:/opt/dbt/dbt-bigquery-project
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     postgres:
@@ -156,6 +157,7 @@ services:
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
     networks:
       - net
+
 
   jupyter:
     image: jupyter/pyspark-notebook:latest
