@@ -174,7 +174,7 @@ def main():
             .option("writeDisposition", "WRITE_APPEND") \
             .mode("append") \
             .save()
-
+        
     except Exception as e:
         logger.error(f"Job failed: {str(e)}", exc_info=True)
         sys.exit(1)

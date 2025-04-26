@@ -1,7 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from airflow.utils.dates import days_ago
 from datetime import datetime, timedelta
 import requests
 import pandas as pd
@@ -9,6 +8,10 @@ import os
 import time, random
 import logging
 print("JAVA_HOME =", os.environ.get("JAVA_HOME"))
+
+SPARK_BIGQUERY_JARS  = os.getenv("SPARK_BIGQUERY_JARS")
+GCP_PROJECT_ID       = os.getenv("GCP_PROJECT_ID")
+ADC_PATH             = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
 default_args = {
     'owner': 'airflow',
@@ -278,6 +281,8 @@ def load_data_to_hdfs(**context):
         
         os.remove(comments_parquet)
         os.remove(product_parquet)
+
+        return hdfs_products_path
     except Exception as e:
         logging.error("Lỗi khi lưu file Parquet lên HDFS: %s", e, exc_info=True)
         raise
@@ -325,12 +330,12 @@ with DAG(
         conn_id='spark_default', 
         verbose=True,
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='products_path') }}"],
-        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',  # Đường dẫn tới connector
+        dag=dag,
+        jars=SPARK_BIGQUERY_JARS,
         conf={
-            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': '/opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json',
-            'spark.hadoop.fs.gs.project.id': 'quantum-theme-441200-q1',
-        },
-        dag=dag
+            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': ADC_PATH,
+            'spark.hadoop.fs.gs.project.id': GCP_PROJECT_ID,
+        }
     )
 
     clean_product_comments_task = SparkSubmitOperator(
@@ -339,12 +344,12 @@ with DAG(
         conn_id='spark_default', 
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='comments_path') }}"],
         verbose=True,
-        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',  # Đường dẫn tới connector
+        dag=dag,
+        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',
         conf={
-            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': '/opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json',
-            'spark.hadoop.fs.gs.project.id': 'quantum-theme-441200-q1',
-        },
-        dag=dag
+            'spark.hadoop.google.cloud.auth.service.account.json.keyfile': ADC_PATH,
+            'spark.hadoop.fs.gs.project.id': GCP_PROJECT_ID,
+        }
     )
 
     crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> [clean_product_details_task, clean_product_comments_task]
