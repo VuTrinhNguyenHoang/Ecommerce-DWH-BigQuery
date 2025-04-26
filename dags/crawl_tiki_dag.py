@@ -141,7 +141,7 @@ def crawl_and_save_comment(**context):
         }
 
         comments = []
-        for product_id in products_id[:100]:
+        for product_id in products_id[:30]:
             params['product_id'] = product_id
             
             try:

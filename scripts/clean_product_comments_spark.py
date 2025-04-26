@@ -149,7 +149,7 @@ def write_output(df, output_path):
 
 def main():
     try:
-        input_path = f"hdfs://namenode:9000{sys.argv[1]}"
+        input_path = f"hdfs://namenode:9000/{sys.argv[1]}"
         
         # 1. Spark Init
         spark = create_spark_session()
@@ -167,13 +167,13 @@ def main():
         # 5. Read cleaned data
         print(df_clean.show(truncate=True))
         
-        df_clean.write \
-                .format("bigquery") \
-                .option("table", "tiki_data.comments") \
-                .option("temporaryGcsBucket", "tiki-data-temp") \
-                .option("writeDisposition", "WRITE_APPEND") \
-                .mode("append") \
-                .save()
+        df.write \
+            .format("bigquery") \
+            .option("table", "tiki_data.comments") \
+            .option("temporaryGcsBucket", "tiki-spark-temp") \
+            .option("writeDisposition", "WRITE_APPEND") \
+            .mode("append") \
+            .save()
         
     except Exception as e:
         logger.error(f"Job failed: {str(e)}", exc_info=True)

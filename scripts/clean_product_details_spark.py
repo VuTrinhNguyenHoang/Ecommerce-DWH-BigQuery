@@ -40,7 +40,7 @@ def read_data(spark, input_path):
             StructField("list_price", LongType(), True),
             StructField("discount", LongType(), True),
             StructField("discount_rate", LongType(), True),
-            StructField("all_time_quantity_sold", DoubleType(), True),
+            StructField("all_time_quantity_sold", LongType(), True),
             StructField("inventory_status", StringType(), True),
             StructField("stock_item_qty", LongType(), True),
             StructField("stock_item_max_sale_qty", LongType(), True),
@@ -165,7 +165,7 @@ def analyze_data(df):
         raise
 
 def main():
-    input_path = f"hdfs://namenode:9000{sys.argv[1]}"
+    input_path = f"hdfs://namenode:9000/{sys.argv[1]}"
     
     try:
         # 1. Spark Init
@@ -184,13 +184,13 @@ def main():
         # 5. Show cleaned data
         print(df_clean.show(truncate=True))
 
-        df_clean.write \
-                .format("bigquery") \
-                .option("table", "tiki_data.products") \
-                .option("temporaryGcsBucket", "tiki-data-temp") \
-                .option("writeDisposition", "WRITE_APPEND") \
-                .mode("append") \
-                .save()
+        df.write \
+            .format("bigquery") \
+            .option("table", "tiki_data.products") \
+            .option("temporaryGcsBucket", "tiki-spark-temp") \
+            .option("writeDisposition", "WRITE_APPEND") \
+            .mode("append") \
+            .save()
         
     except Exception as e:
         logger.error(f"Job failed: {str(e)}", exc_info=True)

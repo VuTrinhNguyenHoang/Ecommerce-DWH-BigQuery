@@ -14,6 +14,7 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW_WEBSERVER_SECRET_KEY: yourwebserversecret
+    GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
@@ -21,6 +22,7 @@ x-airflow-common:
     - ./scripts:/opt/airflow/scripts
     - ./keys:/opt/airflow/keys
     - ./jars:/opt/airflow/jars
+    - ./dbt-bigquery-project:/opt/dbt/dbt-bigquery-project
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     postgres:
@@ -156,6 +158,7 @@ services:
     networks:
       - net
 
+
   jupyter:
     image: jupyter/pyspark-notebook:latest
     container_name: jupyter-notebook
@@ -179,6 +182,7 @@ services:
       - ./jars:/opt/airflow/jars
       - ./keys:/opt/airflow/keys
     environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/keys/quantum-theme-441200-q1-849405bd4608.json
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
     ports:
@@ -196,7 +200,6 @@ services:
       - ./jars:/opt/airflow/jars
       - ./keys:/opt/airflow/keys
     environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/keys/sa.json
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
     depends_on:
