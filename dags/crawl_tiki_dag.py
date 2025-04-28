@@ -345,7 +345,7 @@ with DAG(
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='comments_path') }}"],
         verbose=True,
         dag=dag,
-        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',
+        jars=SPARK_BIGQUERY_JARS,
         conf={
             'spark.hadoop.google.cloud.auth.service.account.json.keyfile': ADC_PATH,
             'spark.hadoop.fs.gs.project.id': GCP_PROJECT_ID,
