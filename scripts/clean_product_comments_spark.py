@@ -167,7 +167,7 @@ def main():
         # 5. Read cleaned data
         print(df_clean.show(truncate=True))
         
-        df.write \
+        df_clean.write \
             .format("bigquery") \
             .option("table", "tiki_data.comments") \
             .option("temporaryGcsBucket", "tiki-spark-temp") \

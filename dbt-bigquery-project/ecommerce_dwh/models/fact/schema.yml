@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: fact_comments
+    description: "Fact table chứa dữ liệu đánh giá/bình luận sản phẩm."
+    columns:
+      - name: comment_id
+        description: "Khóa chính của bảng comment."
+        tests:
+          - unique
+          - not_null
+      - name: product_id
+        description: "Khóa ngoại liên kết với dim_products."
+      - name: comment_rating
+        description: "Điểm đánh giá từ người dùng."
+      - name: comment_date
+        description: "Ngày người dùng để lại bình luận."
+      - name: comment_count
+        description: "Đếm số lượng bình luận (luôn là 1 để dùng aggregation)."
+
+  - name: fact_product_snapshots
+    description: "Fact table chứa thông tin biến động sản phẩm theo thời gian."
+    columns:
+      - name: product_id
+        description: "Khóa ngoại liên kết với dim_products."
+      - name: snapshot_date
+        description: "Ngày snapshot dữ liệu."
+      - name: product_all_time_quantity_sold
+        description: "Tổng số lượng đã bán đến thời điểm snapshot."
+      - name: product_stock_item_qty
+        description: "Số lượng tồn kho hiện tại."
+      - name: product_stock_item_max_sale_qty
+        description: "Số lượng tối đa được phép bán."
+      - name: product_price
+        description: "Giá bán hiện tại."
+      - name: product_list_price
+        description: "Giá niêm yết (trước khi giảm giá)."
+      - name: product_discount
+        description: "Số tiền được giảm giá."
+      - name: product_discount_rate
+        description: "Phần trăm giảm giá so với giá niêm yết."

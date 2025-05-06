@@ -1,6 +1,8 @@
 from airflow import DAG
+from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+
 from datetime import datetime, timedelta
 import requests
 import pandas as pd
@@ -352,4 +354,14 @@ with DAG(
         }
     )
 
-    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> [clean_product_details_task, clean_product_comments_task]
+    dbt_run = BashOperator(
+        task_id='dbt_run',
+        bash_command='cd /opt/dbt/dbt-bigquery-project/ecommerce_dwh && dbt run',
+    )
+
+    dbt_test = BashOperator(
+        task_id='dbt_test',
+        bash_command='cd /opt/dbt/dbt-bigquery-project/ecommerce_dwh && dbt test',
+    )
+
+    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> [clean_product_details_task, clean_product_comments_task] >> dbt_run >> dbt_test

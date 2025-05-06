@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: dim_products
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+      - name: effective_date
+        tests:
+          - not_null
+      - name: is_active
+        tests:
+          - not_null
+      - name: product_name
+        tests:
+          - not_null
+  - name: dim_comments
+    columns:
+      - name: comment_id
+        tests:
+          - not_null
+          - unique
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_products')
+              field: product_id
+      - name: comment_content
+        tests:
+          - not_null
+      - name: comment_rating
+        tests:
+          - not_null
