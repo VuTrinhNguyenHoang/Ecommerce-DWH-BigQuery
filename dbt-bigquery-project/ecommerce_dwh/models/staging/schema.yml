@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_products
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+      - name: product_name
+        tests:
+          - not_null
+      - name: load_date
+        tests:
+          - not_null
+  - name: stg_comments
+    columns:
+      - name: comment_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+      - name: load_date
+        tests:
+          - not_null
