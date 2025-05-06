@@ -184,7 +184,7 @@ def main():
         # 5. Show cleaned data
         print(df_clean.show(truncate=True))
 
-        df.write \
+        df_clean.write \
             .format("bigquery") \
             .option("table", "tiki_data.products") \
             .option("temporaryGcsBucket", "tiki-spark-temp") \
