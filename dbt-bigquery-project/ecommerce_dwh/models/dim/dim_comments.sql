@@ -20,15 +20,40 @@ WITH new_records AS (
     CAST(rating_valid AS BOOLEAN) AS rating_valid,
     CAST(load_date AS DATE) AS effective_date,
     CAST(NULL AS DATE) AS end_date,
-    CAST(TRUE AS BOOLEAN) AS is_active
+    CAST(TRUE AS BOOLEAN) AS is_active,
+    ROW_NUMBER() OVER (PARTITION BY comment_id, load_date ORDER BY load_date DESC, created_at DESC) AS rn
   FROM
-    {{ ref('stg_comments') }}
+    {{ ref('stg_comments') }} s
   {% if is_incremental %}
-    WHERE load_date > (
-      SELECT COALESCE(MAX(effective_date), '1900-01-01')
-      FROM {{ this }}
+    WHERE load_date >= (
+      SELECT COALESCE(MAX(t.effective_date), '1900-01-01')
+      FROM {{ this }} t
+      WHERE t.effective_date IS NOT NULL
+    )
+    AND NOT EXISTS (
+      SELECT 1
+      FROM {{ this }} t
+      WHERE t.effective_date = s.load_date
+      AND t.comment_id = s.comment_id
     )
   {% endif %}
+),
+
+filtered_new_records AS (
+  SELECT
+    comment_id,
+    product_id,
+    comment_content,
+    comment_rating,
+    created_at,
+    purchased_at,
+    days_to_review,
+    rating_valid,
+    effective_date,
+    end_date,
+    is_active
+  FROM new_records
+  WHERE rn = 1
 ),
 
 existing_records AS (
@@ -67,7 +92,7 @@ updated_records AS (
   FROM
     existing_records e
   JOIN
-    new_records n
+    filtered_new_records n
   ON
     e.comment_id = n.comment_id
   WHERE
@@ -90,7 +115,7 @@ final AS (
     effective_date,
     end_date,
     is_active
-  FROM new_records
+  FROM filtered_new_records
   UNION ALL
   SELECT
     comment_id,
@@ -120,8 +145,8 @@ final AS (
     is_active
   FROM {{ this }}
   WHERE
-    comment_id NOT IN (SELECT comment_id FROM new_records)
-    OR (comment_id IN (SELECT comment_id FROM new_records) AND is_active = FALSE)
+    comment_id NOT IN (SELECT comment_id FROM filtered_new_records)
+    OR (comment_id IN (SELECT comment_id FROM filtered_new_records) AND is_active = FALSE)
 )
 
 SELECT
@@ -136,5 +161,4 @@ SELECT
   effective_date,
   end_date,
   is_active
-FROM
-  final
+FROM final

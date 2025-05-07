@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    unique_key='comment_id',
+    unique_key=['comment_id', 'snapshot_date'],
     partition_by={"field": "comment_date", "data_type": "date"},
     cluster_by=["product_id"]
 ) }}
