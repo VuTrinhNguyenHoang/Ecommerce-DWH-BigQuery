@@ -29,6 +29,7 @@ CLUSTER BY product_id;
 CREATE TABLE tiki_data.dim_comments (
     comment_id STRING,
     product_id STRING,
+    sentiment STRING,
     comment_content STRING,
     comment_rating INT64,
     created_at TIMESTAMP,
