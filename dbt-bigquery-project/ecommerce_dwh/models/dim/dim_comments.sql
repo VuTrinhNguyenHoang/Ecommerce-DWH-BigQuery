@@ -12,6 +12,7 @@ WITH new_records AS (
   SELECT
     CAST(comment_id AS STRING) AS comment_id,
     CAST(product_id AS STRING) AS product_id,
+    CAST(sentiment AS STRING) AS sentiment,
     CAST(comment_content AS STRING) AS comment_content,
     CAST(comment_rating AS INT64) AS comment_rating,
     CAST(created_at AS TIMESTAMP) AS created_at,
@@ -43,6 +44,7 @@ filtered_new_records AS (
   SELECT
     comment_id,
     product_id,
+    sentiment,
     comment_content,
     comment_rating,
     created_at,
@@ -60,6 +62,7 @@ existing_records AS (
   SELECT
     CAST(comment_id AS STRING) AS comment_id,
     CAST(product_id AS STRING) AS product_id,
+    CAST(sentiment AS STRING) AS sentiment,
     CAST(comment_content AS STRING) AS comment_content,
     CAST(comment_rating AS INT64) AS comment_rating,
     CAST(created_at AS TIMESTAMP) AS created_at,
@@ -80,6 +83,7 @@ updated_records AS (
   SELECT
     e.comment_id,
     e.product_id,
+    e.sentiment,
     e.comment_content,
     e.comment_rating,
     e.created_at,
@@ -106,6 +110,7 @@ final AS (
   SELECT
     comment_id,
     product_id,
+    sentiment,
     comment_content,
     comment_rating,
     created_at,
@@ -120,6 +125,7 @@ final AS (
   SELECT
     comment_id,
     product_id,
+    sentiment,
     comment_content,
     comment_rating,
     created_at,
@@ -134,6 +140,7 @@ final AS (
   SELECT
     comment_id,
     product_id,
+    sentiment,
     comment_content,
     comment_rating,
     created_at,
@@ -149,9 +156,10 @@ final AS (
     OR (comment_id IN (SELECT comment_id FROM filtered_new_records) AND is_active = FALSE)
 )
 
-SELECT
+SELECT DISTINCT
   comment_id,
   product_id,
+  sentiment,
   comment_content,
   comment_rating,
   created_at,
