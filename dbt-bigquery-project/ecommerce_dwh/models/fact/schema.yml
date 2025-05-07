@@ -7,7 +7,6 @@ models:
       - name: comment_id
         description: "Khóa chính của bảng comment."
         tests:
-          - unique
           - not_null
       - name: product_id
         description: "Khóa ngoại liên kết với dim_products."

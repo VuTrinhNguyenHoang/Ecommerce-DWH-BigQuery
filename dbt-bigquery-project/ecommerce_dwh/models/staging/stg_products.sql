@@ -1,6 +1,6 @@
 {{ config(materialized='table') }}
 
-SELECT
+SELECT DISTINCT
   CAST(id AS STRING) AS product_id,
   name AS product_name,
   COALESCE(short_description, '') AS product_description,

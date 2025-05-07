@@ -16,16 +16,37 @@ WITH new_records AS (
     CAST(product_inventory_status AS STRING) AS product_inventory_status,
     CAST(load_date AS DATE) AS source_effective_date,
     CAST(NULL AS DATE) AS end_date,
-    CAST(TRUE AS BOOLEAN) AS is_active
+    CAST(TRUE AS BOOLEAN) AS is_active,
+    load_date,
+    ROW_NUMBER() OVER (PARTITION BY product_id, load_date ORDER BY load_date DESC) AS rn
   FROM
-    {{ ref('stg_products') }}
+    {{ ref('stg_products') }} s
   {% if is_incremental %}
-    WHERE load_date > (
+    WHERE load_date >= (
       SELECT COALESCE(MAX(t.effective_date), '1900-01-01')
       FROM {{ this }} t
       WHERE t.effective_date IS NOT NULL
     )
+    AND NOT EXISTS (
+      SELECT 1
+      FROM {{ this }} t
+      WHERE t.effective_date = s.load_date
+      AND t.product_id = s.product_id
+    )
   {% endif %}
+),
+
+filtered_new_records AS (
+  SELECT
+    product_id,
+    product_name,
+    product_description,
+    product_inventory_status,
+    source_effective_date,
+    end_date,
+    is_active
+  FROM new_records
+  WHERE rn = 1
 ),
 
 existing_records AS (
@@ -41,7 +62,7 @@ existing_records AS (
     {{ this }}
   WHERE
     is_active = TRUE
-    AND product_id IN (SELECT product_id FROM new_records)
+    AND product_id IN (SELECT product_id FROM filtered_new_records)
 ),
 
 updated_records AS (
@@ -56,7 +77,7 @@ updated_records AS (
   FROM
     existing_records e
   JOIN
-    new_records n
+    filtered_new_records n
   ON
     e.product_id = n.product_id
   WHERE
@@ -65,7 +86,7 @@ updated_records AS (
     OR e.product_inventory_status != n.product_inventory_status
 ),
 
-final AS (
+combined_records AS (
   SELECT
     product_id,
     product_name,
@@ -74,7 +95,7 @@ final AS (
     source_effective_date AS effective_date,
     end_date,
     is_active
-  FROM new_records
+  FROM filtered_new_records
   UNION ALL
   SELECT
     product_id,
@@ -96,8 +117,21 @@ final AS (
     t.is_active
   FROM {{ this }} t
   WHERE
-    t.product_id NOT IN (SELECT product_id FROM new_records)
-    OR (t.product_id IN (SELECT product_id FROM new_records) AND t.is_active = FALSE)
+    t.product_id NOT IN (SELECT product_id FROM filtered_new_records)
+    OR (t.product_id IN (SELECT product_id FROM filtered_new_records) AND t.is_active = FALSE)
+),
+
+final AS (
+  SELECT
+    product_id,
+    product_name,
+    product_description,
+    product_inventory_status,
+    effective_date,
+    end_date,
+    is_active,
+    ROW_NUMBER() OVER (PARTITION BY product_id, effective_date ORDER BY effective_date DESC) AS rn
+  FROM combined_records
 )
 
 SELECT
@@ -108,5 +142,5 @@ SELECT
   effective_date,
   end_date,
   is_active
-FROM
-  final
+FROM final
+WHERE rn = 1
