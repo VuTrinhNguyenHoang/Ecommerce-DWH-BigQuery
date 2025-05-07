@@ -12,7 +12,7 @@ CREATE TABLE tiki_data.dim_products (
   ) 
 PARTITION BY effective_date;
 
-CREATE TABLE `tiki_data.fact_product` (
+CREATE TABLE `tiki_data.fact_products` (
   product_id STRING,
   snapshot_date DATE,
   product_all_time_quantity_sold INT64,
