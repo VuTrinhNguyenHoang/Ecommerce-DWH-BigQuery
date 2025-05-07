@@ -134,7 +134,7 @@ final AS (
   FROM combined_records
 )
 
-SELECT
+SELECT DISTINCT
   product_id,
   product_name,
   product_description,

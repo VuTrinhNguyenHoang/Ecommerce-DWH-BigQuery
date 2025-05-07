@@ -5,7 +5,7 @@
     cluster_by=["product_id"]
 ) }}
 
-SELECT
+SELECT DISTINCT
   product_id,
   CURRENT_DATE() AS snapshot_date,
   product_all_time_quantity_sold,
