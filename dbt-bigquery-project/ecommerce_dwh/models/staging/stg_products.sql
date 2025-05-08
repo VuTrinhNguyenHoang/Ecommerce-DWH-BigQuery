@@ -17,3 +17,4 @@ FROM
   `quantum-theme-441200-q1.tiki_data.products`
 WHERE
   id IS NOT NULL
+  AND date = CURRENT_DATE()
