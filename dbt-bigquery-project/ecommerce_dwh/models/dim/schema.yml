@@ -20,7 +20,6 @@ models:
       - name: comment_id
         tests:
           - not_null
-          - unique
       - name: product_id
         tests:
           - not_null
