@@ -8,3 +8,5 @@ USER airflow
 
 COPY requirements.txt /opt/airflow/requirements.txt
 RUN pip install --no-cache-dir -r /opt/airflow/requirements.txt
+# RUN pip install dbt-core==1.9.4 --no-deps
+# RUN pip install dbt-bigquery==1.9.1 --no-deps
