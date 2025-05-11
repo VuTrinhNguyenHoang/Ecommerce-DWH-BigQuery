@@ -4,5 +4,5 @@ hdfs
 pyarrow
 apache-airflow-providers-apache-spark
 apache-airflow-providers-dbt-cloud
-dbt-bigquery==1.9.1
-dbt-core==1.9.4
+# dbt-bigquery==1.9.1
+# dbt-core==1.9.4
