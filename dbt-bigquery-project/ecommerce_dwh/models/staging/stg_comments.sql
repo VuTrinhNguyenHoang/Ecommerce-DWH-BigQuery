@@ -12,7 +12,7 @@ SELECT DISTINCT
   rating_valid,
   CURRENT_DATE() AS load_date
 FROM
-  `quantum-theme-441200-q1.tiki_data.comments`
+  `{{ env_var('DATASET_NAME') }}.comments`
 WHERE
   id IS NOT NULL
   AND product_id IS NOT NULL

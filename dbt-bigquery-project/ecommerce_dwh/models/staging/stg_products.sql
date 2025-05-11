@@ -14,7 +14,7 @@ SELECT DISTINCT
   COALESCE(stock_item_max_sale_qty, 0) AS product_stock_item_max_sale_qty,
   CURRENT_DATE() AS load_date
 FROM
-  `quantum-theme-441200-q1.tiki_data.products`
+  `{{ env_var('DATASET_NAME') }}.products`
 WHERE
   id IS NOT NULL
   AND date = CURRENT_DATE()
