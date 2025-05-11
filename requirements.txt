@@ -4,6 +4,5 @@ hdfs
 pyarrow
 apache-airflow-providers-apache-spark
 apache-airflow-providers-dbt-cloud
-# Nếu mạng mạnh thì mở comment 2 dòng dưới, còn không thì vào container của airflow và cài đặt dbt bằng pip
-# dbt-core==1.9.4
-# dbt-bigquery==1.9.1
+dbt-core==1.9.4
+dbt-bigquery==1.9.1

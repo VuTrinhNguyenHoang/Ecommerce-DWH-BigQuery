@@ -326,8 +326,8 @@ with DAG(
         provide_context=True
     )
 
-    clean_product_details_task = SparkSubmitOperator(
-        task_id='spark_clean_product_details',
+    clean_product_details_and_load_to_bigquery_task = SparkSubmitOperator(
+        task_id='spark_clean_product_details_and_load_to_bigquery',
         application='/opt/airflow/scripts/clean_product_details_spark.py',  
         conn_id='spark_default', 
         verbose=True,
@@ -340,14 +340,14 @@ with DAG(
         }
     )
 
-    clean_product_comments_task = SparkSubmitOperator(
-        task_id='spark_clean_product_comments',
+    clean_product_comments_and_load_to_bigquery_task = SparkSubmitOperator(
+        task_id='spark_clean_product_comments_and_load_to_bigquery',
         application='/opt/airflow/scripts/clean_product_comments_spark.py',  
         conn_id='spark_default', 
         application_args=["{{ ti.xcom_pull(task_ids='load_data_to_hdfs', key='comments_path') }}"],
         verbose=True,
         dag=dag,
-        jars='/opt/airflow/jars/spark-bigquery-with-dependencies_2.12-0.42.1.jar,/opt/airflow/jars/gcs-connector-hadoop3-latest.jar',
+        jars=SPARK_BIGQUERY_JARS,
         conf={
             'spark.hadoop.google.cloud.auth.service.account.json.keyfile': ADC_PATH,
             'spark.hadoop.fs.gs.project.id': GCP_PROJECT_ID,
@@ -364,4 +364,4 @@ with DAG(
         bash_command='cd /opt/dbt/dbt-bigquery-project/ecommerce_dwh && dbt test',
     )
 
-    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> [clean_product_details_task, clean_product_comments_task] >> dbt_run >> dbt_test
+    crawl_categories >> crawl_product_id >> [crawl_comment, crawl_product_detail] >> load_to_hdfs >> [clean_product_details_and_load_to_bigquery_task, clean_product_comments_and_load_to_bigquery_task] >> dbt_run >> dbt_test

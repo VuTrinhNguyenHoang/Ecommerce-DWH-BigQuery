@@ -3,6 +3,10 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 import sys
 from datetime import datetime
+import os
+
+DATASET_NAME = os.getenv("DATASET_NAME")
+BUCKET_NAME = os.getenv("BUCKET_NAME")
 
 def setup_logging():
     import logging
@@ -169,8 +173,8 @@ def main():
         
         df_clean.write \
             .format("bigquery") \
-            .option("table", "tiki_data.comments") \
-            .option("temporaryGcsBucket", "tiki-spark-temp") \
+            .option("table", f"{DATASET_NAME}.comments") \
+            .option("temporaryGcsBucket", f"{BUCKET_NAME}") \
             .option("writeDisposition", "WRITE_APPEND") \
             .mode("append") \
             .save()
