@@ -7,10 +7,4 @@ plugins/
 notebooks/
 __pycache__/
 keys/
-jars/
-dags/comments/
-dags/products/
 venv/
-notebooks/
-keys/
-jars/
