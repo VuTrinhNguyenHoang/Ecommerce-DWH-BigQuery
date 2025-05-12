@@ -126,7 +126,11 @@ services:
 
   airflow-webserver:
     <<: *airflow-common
-    command: bash -c "airflow db upgrade && airflow webserver"
+    command: bash -c "
+        sudo -u airflow pip install --no-cache-dir protobuf==4.23.4 dbt-core==1.7.9 dbt-bigquery==1.7.9 &&
+        airflow db upgrade &&
+        airflow webserver
+      "
     ports:
       - 8080:8080
     healthcheck:
@@ -140,7 +144,11 @@ services:
 
   airflow-scheduler:
     <<: *airflow-common
-    command: bash -c "airflow db upgrade && airflow scheduler"
+    command: bash -c "
+        sudo -u airflow pip install --no-cache-dir protobuf==4.23.4 dbt-core==1.7.9 dbt-bigquery==1.7.9 &&
+        airflow db upgrade &&
+        airflow scheduler
+      "
     restart: always
     networks:
       - net

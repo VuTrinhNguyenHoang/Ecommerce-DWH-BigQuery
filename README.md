@@ -47,6 +47,7 @@ GCP_PROJECT_ID=your_project_id
 GOOGLE_APPLICATION_CREDENTIALS=/opt/airflow/keys/your_key_file.json
 DATASET_NAME=your_dataset_name
 BUCKET_NAME = your_bucket_name
+LOCATION = your_location
 ```
 
 ### 3. Khởi động dịch vụ
