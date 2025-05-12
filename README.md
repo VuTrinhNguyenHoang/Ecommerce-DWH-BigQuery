@@ -24,7 +24,7 @@ Dự án này là một pipeline xử lý dữ liệu thương mại điện t�
 8. **Container**: Docker được sử dụng để đóng gói toàn bộ ứng dụng, bao gồm Airflow, Spark và HDFS, giúp dễ dàng triển khai và quản lý.
 9. **Trực quan hóa**: Microsoft Power BI được sử dụng để kết nối với BigQuery và tạo các báo cáo, dashboard trực quan để phân tích dữ liệu.
 
-<img src="image/system_architecture.png" width="800">
+<img src="image/system_architecture.png" width="1000">
 
 ## Yêu cầu hệ thống
 - Docker và Docker Compose
